@@ -15,6 +15,10 @@ transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5
 train_data= datasets.MNIST(root='./data', train=True, transform=transform, download=True)
 test_data = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
 train_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=False)
+test_loader = torch.utils.data.DataLoader(test_data,
+                                           batch_size=batch_size,
+                                           shuffle=False)
+
 
 print(f"Training samples: {len(train_data)}")
 print(f"Test samples: {len(test_data)}")
@@ -61,3 +65,24 @@ for epoch in range(epochs):
 
     accuracy = 100 * correct / total
     print(f"Epoch {epoch+1}/{epochs} | Loss: {total_loss/len(train_loader):.4f} | Accuracy: {accuracy:.2f}%")
+
+model.eval()
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for images, labels in test_loader:
+        outputs = model(images)
+        predicted = torch.argmax(outputs, dim=1)
+        correct += (predicted == labels).sum().item()
+        total += labels.size(0)
+
+test_accuracy = 100* correct/total
+print(f"Test Accuracy: {test_accuracy:.2f}%")
+
+torch.save(model.state_dict(), 'model_fp32.pth')
+print(f"Model saved as model_fp32/pth")
+
+import os
+size_kb = os.path.getsize('model_fp32.pth')/1024
+print(f"Model size: {size_kb:.1f} KB")
